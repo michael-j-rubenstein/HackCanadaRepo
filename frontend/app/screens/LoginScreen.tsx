@@ -2,18 +2,18 @@ import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 
-export default function HomeScreen() {
-  const { clearSession, user } = useAuth0();
+export default function LoginScreen() {
+  const { authorize } = useAuth0();
 
-  const handleLogout = async () => {
-    await clearSession();
+  const handleLogin = async () => {
+    await authorize();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome, {user?.name ?? "User"}!</Text>
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Log Out</Text>
+      <Text style={styles.title}>Welcome to HackCanadaRepo</Text>
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
     </View>
   );
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   button: {
-    backgroundColor: "#FF3B30",
+    backgroundColor: "#007AFF",
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 8,
