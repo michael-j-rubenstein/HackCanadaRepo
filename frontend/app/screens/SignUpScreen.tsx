@@ -10,27 +10,32 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 
-export default function LoginScreen() {
-  const { login } = useAuth();
+export default function SignUpScreen() {
+  const { signUp } = useAuth();
   const navigation = useNavigation<any>();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
     setError("");
-    if (!email || !password) {
-      setError("Please enter both email and password.");
+    if (!email || !password || !confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
     setLoading(true);
     try {
-      await login(email, password);
+      await signUp(email, password);
     } catch (e: any) {
       const message =
-        e?.message || e?.json?.error_description || "Login failed. Please try again.";
+        e?.message || e?.json?.error_description || "Sign up failed. Please try again.";
       setError(message);
     } finally {
       setLoading(false);
@@ -39,7 +44,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to HackCanadaRepo</Text>
+      <Text style={styles.title}>Create Account</Text>
 
       <TextInput
         style={styles.input}
@@ -58,25 +63,33 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
       <TouchableOpacity
         style={styles.button}
-        onPress={handleLogin}
+        onPress={handleSignUp}
         disabled={loading}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.buttonText}>Log In</Text>
+          <Text style={styles.buttonText}>Sign Up</Text>
         )}
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.linkButton}
-        onPress={() => navigation.navigate("SignUp")}
+        onPress={() => navigation.goBack()}
       >
-        <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
+        <Text style={styles.linkText}>Already have an account? Log In</Text>
       </TouchableOpacity>
     </View>
   );

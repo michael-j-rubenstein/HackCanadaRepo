@@ -1,18 +1,14 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
-import { useAuth0 } from "react-native-auth0";
+import { useAuth } from "../context/AuthContext";
 
 export default function HomeScreen() {
-  const { clearSession, user } = useAuth0();
-
-  const handleLogout = async () => {
-    await clearSession();
-  };
+  const { logout, user } = useAuth();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome, {user?.name ?? "User"}!</Text>
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
+      <Text style={styles.title}>Welcome, {user?.name ?? user?.email ?? "User"}!</Text>
+      <TouchableOpacity style={styles.button} onPress={logout}>
         <Text style={styles.buttonText}>Log Out</Text>
       </TouchableOpacity>
     </View>
