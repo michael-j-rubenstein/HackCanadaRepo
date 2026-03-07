@@ -1,3 +1,5 @@
+import socketio
+
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -7,6 +9,7 @@ from app.database import get_db
 from app.routes import items, submissions, alerts, cart, pins
 from app.routes import example
 from app.seed import run_seed
+from app.sockets.recipe_socket import sio
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -34,3 +37,5 @@ def health_check():
 @app.post(f"{settings.API_V1_STR}/seed")
 def seed_database(db: Session = Depends(get_db)):
     return run_seed(db)
+
+socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
