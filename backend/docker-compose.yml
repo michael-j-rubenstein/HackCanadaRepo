@@ -27,6 +27,7 @@ services:
       DATABASE_URL: postgresql://hackcanada:hackcanada@postgres:5432/hackcanada_db
       API_V1_STR: /api/v1
       PROJECT_NAME: HackCanadaRepo
+      PYTHONPATH: /backend
     volumes:
       - ./app:/backend/app
     depends_on:

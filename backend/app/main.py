@@ -1,8 +1,12 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.database import get_db
+from app.routes import items, submissions, alerts
 from app.routes import example
+from app.seed import run_seed
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -15,8 +19,16 @@ app.add_middleware(
 )
 
 app.include_router(example.router, prefix=settings.API_V1_STR)
+app.include_router(items.router, prefix=settings.API_V1_STR)
+app.include_router(submissions.router, prefix=settings.API_V1_STR)
+app.include_router(alerts.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.post(f"{settings.API_V1_STR}/seed")
+def seed_database(db: Session = Depends(get_db)):
+    return run_seed(db)
