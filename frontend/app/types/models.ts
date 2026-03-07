@@ -52,3 +52,27 @@ export interface PriceAlertCreate {
   item_id: number;
   target_price: number;
 }
+
+export interface ShoppingCartItem {
+  id: number;
+  item_id: number;
+  item_name: string | null;
+  created_at: string | null;
+}
+
+export interface ShoppingCartItemCreate {
+  item_id: number;
+}
+
+export interface PinnedItem {
+  id: number;
+  item_id: number;
+  item_name: string | null;
+  current_price: number | null;
+  price_change_pct: number | null;
+  created_at: string | null;
+}
+
+export interface PinnedItemCreate {
+  item_id: number;
+}

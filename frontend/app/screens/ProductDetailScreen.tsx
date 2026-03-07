@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -15,18 +16,25 @@ import {
   useGetItemQuery,
   useGetPriceHistoryQuery,
   useSubmitPriceMutation,
+  useGetPinsQuery,
+  usePinItemMutation,
+  useUnpinItemMutation,
 } from "../../redux/api";
-import type { HomeStackParamList } from "../routing/types";
+import type { MarketStackParamList } from "../routing/types";
 import { colors, gradients } from "../theme/theme";
 import { getItemEmoji } from "../utils/emojiMap";
 
-type Props = NativeStackScreenProps<HomeStackParamList, "ProductDetail">;
+type Props = NativeStackScreenProps<MarketStackParamList, "ProductDetail">;
 
 export default function ProductDetailScreen({ route }: Props) {
   const { itemId } = route.params;
   const { data: item, isLoading: itemLoading } = useGetItemQuery(itemId);
   const { data: history, isLoading: historyLoading } = useGetPriceHistoryQuery({ id: itemId });
   const [submitPrice, { isLoading: submitting }] = useSubmitPriceMutation();
+  const { data: pins } = useGetPinsQuery();
+  const [pinItem] = usePinItemMutation();
+  const [unpinItem] = useUnpinItemMutation();
+  const isPinned = pins?.some((p) => p.item_id === itemId) ?? false;
 
   const handleSubmit = async (data: { price: number; store_name: string; date_observed: string }) => {
     try {
@@ -74,6 +82,35 @@ export default function ProductDetailScreen({ route }: Props) {
             </Text>
           </View>
         </View>
+        <TouchableOpacity
+          style={[
+            styles.pinButton,
+            isPinned
+              ? { backgroundColor: colors.accent }
+              : { backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.accent },
+          ]}
+          onPress={async () => {
+            try {
+              if (isPinned) {
+                await unpinItem(itemId).unwrap();
+              } else {
+                await pinItem({ item_id: itemId }).unwrap();
+              }
+            } catch {
+              Alert.alert("Error", "Failed to update pin.");
+            }
+          }}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.pinButtonText,
+              { color: isPinned ? colors.bgDeepest : colors.accent },
+            ]}
+          >
+            {isPinned ? "\u{1F4CC} Unpin" : "\u{1F4CC} Pin"}
+          </Text>
+        </TouchableOpacity>
       </LinearGradient>
 
       <Text style={styles.sectionTitle}>30-Day Price History</Text>
@@ -110,6 +147,16 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   pillText: { fontSize: 14, fontWeight: "600" },
+  pinButton: {
+    borderRadius: 99,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    marginTop: 12,
+  },
+  pinButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",

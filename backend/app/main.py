@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.routes import items, submissions, alerts
+from app.routes import items, submissions, alerts, cart, pins
 from app.routes import example
 from app.seed import run_seed
 
@@ -22,6 +22,8 @@ app.include_router(example.router, prefix=settings.API_V1_STR)
 app.include_router(items.router, prefix=settings.API_V1_STR)
 app.include_router(submissions.router, prefix=settings.API_V1_STR)
 app.include_router(alerts.router, prefix=settings.API_V1_STR)
+app.include_router(cart.router, prefix=settings.API_V1_STR)
+app.include_router(pins.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health")

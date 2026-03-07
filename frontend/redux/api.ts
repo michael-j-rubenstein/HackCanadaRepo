@@ -8,12 +8,16 @@ import type {
   PriceSubmissionCreate,
   PriceAlert,
   PriceAlertCreate,
+  ShoppingCartItem,
+  ShoppingCartItemCreate,
+  PinnedItem,
+  PinnedItemCreate,
 } from "../app/types/models";
 
 export const groceryApi = createApi({
   reducerPath: "groceryApi",
   baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
-  tagTypes: ["Items", "Alerts", "PriceHistory"],
+  tagTypes: ["Items", "Alerts", "PriceHistory", "Cart", "Pins"],
   endpoints: (builder) => ({
     getCategories: builder.query<Category[], void>({
       query: () => "/categories",
@@ -89,6 +93,50 @@ export const groceryApi = createApi({
       }),
       invalidatesTags: ["Items", "Alerts"],
     }),
+
+    getCart: builder.query<ShoppingCartItem[], void>({
+      query: () => "/cart",
+      providesTags: ["Cart"],
+    }),
+
+    addToCart: builder.mutation<ShoppingCartItem, ShoppingCartItemCreate>({
+      query: (body) => ({
+        url: "/cart",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+
+    removeFromCart: builder.mutation<void, number>({
+      query: (itemId) => ({
+        url: `/cart/${itemId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+
+    getPins: builder.query<PinnedItem[], void>({
+      query: () => "/pins",
+      providesTags: ["Pins"],
+    }),
+
+    pinItem: builder.mutation<PinnedItem, PinnedItemCreate>({
+      query: (body) => ({
+        url: "/pins",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Pins"],
+    }),
+
+    unpinItem: builder.mutation<void, number>({
+      query: (itemId) => ({
+        url: `/pins/${itemId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Pins"],
+    }),
   }),
 });
 
@@ -102,4 +150,10 @@ export const {
   useCreateAlertMutation,
   useDeleteAlertMutation,
   useSeedDatabaseMutation,
+  useGetCartQuery,
+  useAddToCartMutation,
+  useRemoveFromCartMutation,
+  useGetPinsQuery,
+  usePinItemMutation,
+  useUnpinItemMutation,
 } = groceryApi;

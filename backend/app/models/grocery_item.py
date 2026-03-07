@@ -22,3 +22,5 @@ class GroceryItem(Base):
     category = relationship("Category", back_populates="items")
     price_submissions = relationship("PriceSubmission", back_populates="item")
     price_alerts = relationship("PriceAlert", back_populates="item")
+    cart_entries = relationship("ShoppingCartItem", back_populates="item")
+    pin_entries = relationship("PinnedItem", back_populates="item")
