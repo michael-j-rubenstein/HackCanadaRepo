@@ -10,9 +10,11 @@ class PriceAlert(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     item_id = Column(Integer, ForeignKey("grocery_items.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     target_price = Column(Float, nullable=False)
     is_triggered = Column(Boolean, default=False)
     triggered_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     item = relationship("GroceryItem", back_populates="price_alerts")
+    user = relationship("User")
