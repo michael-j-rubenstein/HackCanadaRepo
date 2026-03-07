@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, useRef } from "react";
-import Auth0 from "react-native-auth0";
+import React, { createContext, useContext, useState, useCallback } from "react";
 
-const DOMAIN = process.env.EXPO_PUBLIC_AUTH0_DOMAIN!;
-const CLIENT_ID = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!;
-const REALM = "Username-Password-Authentication";
+const DOMAIN = process.env.EXPO_PUBLIC_AUTH0_DOMAIN;
+const CLIENT_ID = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID;
+const SKIP_AUTH = process.env.EXPO_PUBLIC_SKIP_AUTH === "true";
 
 function decodeIdToken(idToken: string): User {
   const payload = idToken.split(".")[1];
@@ -39,41 +38,80 @@ const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(
+    SKIP_AUTH ? { email: "dev@local", name: "Dev User" } : null
+  );
   const [loading, setLoading] = useState(false);
-  const auth0Ref = useRef(new Auth0({ domain: DOMAIN, clientId: CLIENT_ID }));
 
   const login = useCallback(async (email: string, password: string) => {
+    if (SKIP_AUTH) {
+      setUser({ email, name: email.split("@")[0] });
+      return;
+    }
     setLoading(true);
     try {
-      const credentials = await auth0Ref.current.auth.passwordRealm({
-        username: email,
-        password,
-        realm: REALM,
-        scope: "openid profile email",
+      const response = await fetch(`https://${DOMAIN}/oauth/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          grant_type: "password",
+          client_id: CLIENT_ID,
+          username: email,
+          password,
+          scope: "openid profile email",
+          connection: "Username-Password-Authentication",
+        }),
       });
-      setUser(decodeIdToken(credentials.idToken));
+      const text = await response.text();
+      let data: any;
+      try { data = JSON.parse(text); } catch { data = {}; }
+      if (!response.ok) throw new Error(data.error_description || data.error || text || "Login failed");
+      setUser(decodeIdToken(data.id_token));
     } finally {
       setLoading(false);
     }
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
+    if (SKIP_AUTH) {
+      setUser({ email, name: email.split("@")[0] });
+      return;
+    }
     setLoading(true);
     try {
-      await auth0Ref.current.auth.createUser({
-        email,
-        password,
-        connection: REALM,
+      const signUpRes = await fetch(`https://${DOMAIN}/dbconnections/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: CLIENT_ID,
+          email,
+          password,
+          connection: "Username-Password-Authentication",
+        }),
       });
+      const signUpText = await signUpRes.text();
+      let signUpData: any;
+      try { signUpData = JSON.parse(signUpText); } catch { signUpData = {}; }
+      if (!signUpRes.ok) throw new Error(signUpData.description || signUpData.error || signUpText || "Sign up failed");
+
       // Auto-login after signup
-      const credentials = await auth0Ref.current.auth.passwordRealm({
-        username: email,
-        password,
-        realm: REALM,
-        scope: "openid profile email",
+      const loginRes = await fetch(`https://${DOMAIN}/oauth/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          grant_type: "password",
+          client_id: CLIENT_ID,
+          username: email,
+          password,
+          scope: "openid profile email",
+          connection: "Username-Password-Authentication",
+        }),
       });
-      setUser(decodeIdToken(credentials.idToken));
+      const loginText = await loginRes.text();
+      let loginData: any;
+      try { loginData = JSON.parse(loginText); } catch { loginData = {}; }
+      if (!loginRes.ok) throw new Error(loginData.error_description || "Login failed");
+      setUser(decodeIdToken(loginData.id_token));
     } finally {
       setLoading(false);
     }
