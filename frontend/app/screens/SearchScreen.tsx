@@ -14,7 +14,7 @@ import { useGetItemsQuery } from "../../redux/api";
 import type { GroceryItem } from "../types/models";
 import type { HomeStackParamList } from "../routing/types";
 
-type Nav = NativeStackNavigationProp<HomeStackParamList, "HomeList">;
+type Nav = NativeStackNavigationProp<HomeStackParamList, "HomeDashboard">;
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");

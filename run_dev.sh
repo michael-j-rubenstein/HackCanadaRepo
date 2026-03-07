@@ -22,5 +22,12 @@ fi
 echo "Installing frontend dependencies..."
 npm install
 
-echo "Starting Expo dev server..."
-npx expo start --clear
+if [ ! -d ios ] || [ ! -d android ]; then
+  echo "Running Expo prebuild..."
+  npx expo prebuild --clean
+else
+  echo "Native directories exist, skipping prebuild (run 'npx expo prebuild --clean' manually if needed)"
+fi
+
+echo "Starting Expo dev server (development build)..."
+npx expo run:ios

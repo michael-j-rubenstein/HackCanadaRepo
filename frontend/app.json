@@ -27,6 +27,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "react-native-auth0",
+        {
+          "domain": "dev-zouz3636ehzd5eo7.us.auth0.com"
+        }
+      ],
+      "expo-web-browser"
+    ]
   }
 }

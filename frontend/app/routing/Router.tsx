@@ -2,6 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Text } from "react-native";
+import { useAuth } from "../context/AuthContext";
 
 import HomeScreen from "../screens/HomeScreen";
 import MarketScreen from "../screens/MarketScreen";
@@ -10,6 +11,8 @@ import ShoppingCartScreen from "../screens/ShoppingCartScreen";
 import ReportScreen from "../screens/ReportScreen";
 import RecipeScreen from "../screens/RecipeScreen";
 import PreferencesScreen from "../screens/PreferencesScreen";
+import LoginScreen from "../screens/LoginScreen";
+import SignUpScreen from "../screens/SignUpScreen";
 
 import type { HomeStackParamList, MarketStackParamList, TabParamList } from "./types";
 import { colors } from "../theme/theme";
@@ -17,6 +20,7 @@ import { colors } from "../theme/theme";
 const HomeStackNav = createNativeStackNavigator<HomeStackParamList>();
 const MarketStackNav = createNativeStackNavigator<MarketStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
+const AuthStack = createNativeStackNavigator();
 
 function HomeStackScreen() {
   return (
@@ -78,6 +82,26 @@ const tabIcons: Record<string, string> = {
 };
 
 export default function Router() {
+  const { user } = useAuth();
+  const isAuthenticated = user !== null;
+
+  if (!isAuthenticated) {
+    return (
+      <AuthStack.Navigator>
+        <AuthStack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+        <AuthStack.Screen
+          name="SignUp"
+          component={SignUpScreen}
+          options={{ headerShown: false }}
+        />
+      </AuthStack.Navigator>
+    );
+  }
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
