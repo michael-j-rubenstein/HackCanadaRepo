@@ -12,7 +12,6 @@ class PinnedItemOut(BaseModel):
     item_id: int
     item_name: Optional[str] = None
     current_price: Optional[float] = None
-    price_change_pct: Optional[float] = None
     created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}

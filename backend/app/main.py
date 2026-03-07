@@ -1,17 +1,27 @@
 import socketio
 
+from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.routes import items, submissions, alerts, cart, pins
+from app.jobs.refresh_views import start_scheduler
+from app.routes import items, submissions, alerts, stores, cart, pins, users, ingest
 from app.routes import example
 from app.seed import run_seed
 from app.sockets.recipe_socket import sio
 
-app = FastAPI(title=settings.PROJECT_NAME)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler = start_scheduler()
+    yield
+    scheduler.shutdown()
+
+
+app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,11 +32,14 @@ app.add_middleware(
 )
 
 app.include_router(example.router, prefix=settings.API_V1_STR)
+app.include_router(users.router, prefix=settings.API_V1_STR)
 app.include_router(items.router, prefix=settings.API_V1_STR)
 app.include_router(submissions.router, prefix=settings.API_V1_STR)
 app.include_router(alerts.router, prefix=settings.API_V1_STR)
+app.include_router(stores.router, prefix=settings.API_V1_STR)
 app.include_router(cart.router, prefix=settings.API_V1_STR)
 app.include_router(pins.router, prefix=settings.API_V1_STR)
+app.include_router(ingest.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health")

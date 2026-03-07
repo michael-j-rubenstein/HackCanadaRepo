@@ -2,16 +2,23 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 from app.models.shopping_cart_item import ShoppingCartItem
 from app.models.grocery_item import GroceryItem
+from app.models.user import User
 from app.schemas.cart import ShoppingCartItemCreate, ShoppingCartItemOut
 
 router = APIRouter()
 
 
 @router.get("/cart", response_model=list[ShoppingCartItemOut])
-def list_cart(db: Session = Depends(get_db)):
-    cart_items = db.query(ShoppingCartItem).order_by(ShoppingCartItem.created_at.desc()).all()
+def list_cart(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    cart_items = (
+        db.query(ShoppingCartItem)
+        .filter(ShoppingCartItem.user_id == user.id)
+        .order_by(ShoppingCartItem.created_at.desc())
+        .all()
+    )
     result = []
     for ci in cart_items:
         out = ShoppingCartItemOut.model_validate(ci)
@@ -22,16 +29,24 @@ def list_cart(db: Session = Depends(get_db)):
 
 
 @router.post("/cart", response_model=ShoppingCartItemOut, status_code=200)
-def add_to_cart(data: ShoppingCartItemCreate, db: Session = Depends(get_db)):
+def add_to_cart(
+    data: ShoppingCartItemCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     item = db.query(GroceryItem).filter(GroceryItem.id == data.item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    existing = db.query(ShoppingCartItem).filter(ShoppingCartItem.item_id == data.item_id).first()
+    existing = (
+        db.query(ShoppingCartItem)
+        .filter(ShoppingCartItem.item_id == data.item_id, ShoppingCartItem.user_id == user.id)
+        .first()
+    )
     if existing:
         raise HTTPException(status_code=409, detail="Item already in cart")
 
-    cart_item = ShoppingCartItem(item_id=data.item_id)
+    cart_item = ShoppingCartItem(item_id=data.item_id, user_id=user.id)
     db.add(cart_item)
     db.commit()
     db.refresh(cart_item)
@@ -42,8 +57,16 @@ def add_to_cart(data: ShoppingCartItemCreate, db: Session = Depends(get_db)):
 
 
 @router.delete("/cart/{item_id}")
-def remove_from_cart(item_id: int, db: Session = Depends(get_db)):
-    cart_item = db.query(ShoppingCartItem).filter(ShoppingCartItem.item_id == item_id).first()
+def remove_from_cart(
+    item_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    cart_item = (
+        db.query(ShoppingCartItem)
+        .filter(ShoppingCartItem.item_id == item_id, ShoppingCartItem.user_id == user.id)
+        .first()
+    )
     if not cart_item:
         raise HTTPException(status_code=404, detail="Item not in cart")
     db.delete(cart_item)
