@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -7,8 +7,8 @@ from app.database import Base
 class Category(Base):
     __tablename__ = "categories"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False, unique=True)
-    icon = Column(String, nullable=True)
+    c_id = Column(String, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    unit = Column(String, nullable=False)
 
-    items = relationship("GroceryItem", back_populates="category")
+    products = relationship("ProductItem", back_populates="category")

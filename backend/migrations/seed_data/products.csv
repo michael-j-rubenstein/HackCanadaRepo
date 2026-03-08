@@ -1,0 +1,10 @@
+p_id,name,c_id,brand_id,store_id,base_price
+prod_milk_pc,2% Milk 2L,cat_dairy,brand_pc,store_loblaws,5.49
+prod_milk_noname,2% Milk 2L,cat_dairy,brand_noname,store_loblaws,4.29
+prod_cream_compliments,Heavy Cream 500ml,cat_dairy,brand_compliments,store_loblaws,4.99
+prod_apples_pc,Gala Apples,cat_produce,brand_pc,store_loblaws,3.99
+prod_bananas_noname,Bananas,cat_produce,brand_noname,store_loblaws,1.49
+prod_carrots_compliments,Baby Carrots 1lb,cat_produce,brand_compliments,store_loblaws,2.99
+prod_bread_pc,Whole Wheat Bread,cat_bakery,brand_pc,store_loblaws,3.49
+prod_bagels_noname,Plain Bagels 6pk,cat_bakery,brand_noname,store_loblaws,2.99
+prod_muffins_compliments,Blueberry Muffins 4pk,cat_bakery,brand_compliments,store_loblaws,5.99
