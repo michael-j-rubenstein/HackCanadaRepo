@@ -29,6 +29,8 @@ services:
       PYTHONPATH: /backend
     volumes:
       - ./app:/backend/app
+      - ./migrations:/backend/migrations
+      - ./tests:/backend/tests
     depends_on:
       postgres:
         condition: service_healthy

@@ -36,58 +36,63 @@ def load_csv(filename: str) -> list[dict]:
 
 
 def seed_stores(session: Session) -> None:
-    """Seed stores table."""
+    """Seed stores table (skip existing)."""
     rows = load_csv("stores.csv")
     for row in rows:
-        store = Store(store_id=row["store_id"], name=row["name"])
-        session.add(store)
+        existing = session.query(Store).filter_by(store_id=row["store_id"]).first()
+        if not existing:
+            session.add(Store(store_id=row["store_id"], name=row["name"]))
     session.commit()
     print(f"Seeded {len(rows)} stores")
 
 
 def seed_brands(session: Session) -> None:
-    """Seed brands table."""
+    """Seed brands table (skip existing)."""
     rows = load_csv("brands.csv")
     for row in rows:
-        brand = Brand(brand_id=row["brand_id"], name=row["name"])
-        session.add(brand)
+        existing = session.query(Brand).filter_by(brand_id=row["brand_id"]).first()
+        if not existing:
+            session.add(Brand(brand_id=row["brand_id"], name=row["name"]))
     session.commit()
     print(f"Seeded {len(rows)} brands")
 
 
 def seed_categories(session: Session) -> None:
-    """Seed categories table."""
+    """Seed categories table (skip existing)."""
     rows = load_csv("categories.csv")
     for row in rows:
-        category = Category(c_id=row["c_id"], name=row["name"], unit=row["unit"])
-        session.add(category)
+        existing = session.query(Category).filter_by(c_id=row["c_id"]).first()
+        if not existing:
+            session.add(Category(c_id=row["c_id"], name=row["name"], unit=row["unit"]))
     session.commit()
     print(f"Seeded {len(rows)} categories")
 
 
 def seed_users(session: Session) -> None:
-    """Seed users table."""
+    """Seed users table (skip existing)."""
     rows = load_csv("users.csv")
     for row in rows:
-        user = User(u_id=row["u_id"], name=row["name"])
-        session.add(user)
+        existing = session.query(User).filter_by(u_id=row["u_id"]).first()
+        if not existing:
+            session.add(User(u_id=row["u_id"], name=row["name"]))
     session.commit()
     print(f"Seeded {len(rows)} users")
 
 
 def seed_products(session: Session) -> dict[str, float]:
-    """Seed products table. Returns dict of p_id -> base_price."""
+    """Seed products table (skip existing). Returns dict of p_id -> base_price."""
     rows = load_csv("products.csv")
     base_prices = {}
     for row in rows:
-        product = ProductItem(
-            p_id=row["p_id"],
-            name=row["name"],
-            c_id=row["c_id"],
-            brand_id=row["brand_id"],
-            store_id=row["store_id"],
-        )
-        session.add(product)
+        existing = session.query(ProductItem).filter_by(p_id=row["p_id"]).first()
+        if not existing:
+            session.add(ProductItem(
+                p_id=row["p_id"],
+                name=row["name"],
+                c_id=row["c_id"],
+                brand_id=row["brand_id"],
+                store_id=row["store_id"],
+            ))
         base_prices[row["p_id"]] = float(row["base_price"])
     session.commit()
     print(f"Seeded {len(rows)} products")
@@ -95,7 +100,10 @@ def seed_products(session: Session) -> dict[str, float]:
 
 
 def seed_price_by_hour(session: Session, base_prices: dict[str, float]) -> None:
-    """Generate hourly price data with small random variations."""
+    """Generate hourly price data with small random variations. Clears existing data first."""
+    session.query(PriceByHour).delete()
+    session.commit()
+
     current = START_DATE
     count = 0
 
