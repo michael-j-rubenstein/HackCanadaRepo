@@ -1,0 +1,61 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.4, pytest-8.3.5, pluggy-1.5.0 -- /opt/anaconda3/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/markoh/Desktop/Projects/HackCanadaRepo/backend
+plugins: docker-3.1.2, anyio-4.8.0
+collecting ... collected 5 items
+
+tests/test_price_aggregation.py::test_basic_aggregation 
+  [INSERT] Product: milk (p_id=test_milk)
+  [INSERT] Submission 1: milk=$3.00, created_at=2026-03-08 01:53:03.756099+00:00
+  [INSERT] Submission 2: milk=$5.00, created_at=2026-03-08 02:13:03.756099+00:00
+  [RUN]    aggregate_hourly_prices()
+  [RESULT] PriceByHour rows: 1
+  [RESULT] Computed avg price: $4.00 (expected $4.00 = avg(3.00, 5.00))
+  [RESULT] Timestamp bucket: 2026-03-08 02:00:00+00:00
+PASSED
+tests/test_price_aggregation.py::test_unconfirmed_submissions_excluded 
+  [INSERT] Product: eggs (p_id=test_eggs)
+  [INSERT] Submission 1 (confirmed):   eggs=$2.00,   created_at=2026-03-08 02:03:03.954648+00:00
+  [INSERT] Submission 2 (unconfirmed): eggs=$100.00, created_at=2026-03-08 02:13:03.954648+00:00
+  [RUN]    aggregate_hourly_prices()
+  [RESULT] PriceByHour rows: 1
+  [RESULT] Computed avg price: $2.00 (expected $2.00 — unconfirmed $100 excluded)
+PASSED
+tests/test_price_aggregation.py::test_old_submissions_excluded 
+  [INSERT] Product: bread (p_id=test_bread)
+  [INSERT] Submission 1: bread=$5.00, created_at=2026-03-08 00:23:04.134006+00:00 (2 hours ago)
+  [RUN]    aggregate_hourly_prices()
+  [RESULT] PriceByHour rows: 0 (expected 0 — submission too old)
+PASSED
+tests/test_price_aggregation.py::test_multiple_products 
+  [INSERT] Product: apple (p_id=test_apple)
+  [INSERT] Product: banana (p_id=test_banana)
+  [INSERT] Submission 1: apple=$1.50, banana=$0.80, created_at=2026-03-08 02:08:04.352285+00:00
+  [INSERT] Submission 2: apple=$2.50, banana=$1.20, created_at=2026-03-08 02:18:04.352285+00:00
+  [RUN]    aggregate_hourly_prices()
+  [RESULT] PriceByHour rows: 2
+  [RESULT] apple avg: $2.00 (expected $2.00 = avg(1.50, 2.50))
+  [RESULT] banana avg: $1.00 (expected $1.00 = avg(0.80, 1.20))
+PASSED
+tests/test_price_aggregation.py::test_duplicate_run_skips_existing 
+  [INSERT] Product: juice (p_id=test_juice)
+  [INSERT] Submission 1: juice=$3.00, created_at=2026-03-08 01:53:04.464200+00:00
+  [RUN]    aggregate_hourly_prices() — first run
+  [RESULT] After 1st run: avg=$3.00
+  [INSERT] Submission 2: juice=$7.00, created_at=2026-03-08 02:18:04.464200+00:00
+  [RUN]    aggregate_hourly_prices() — second run
+  [RESULT] After 2nd run: rows=1, avg=$3.00 (expected $3.00 — original preserved)
+PASSED
+
+=============================== warnings summary ===============================
+../../../../../../opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:295
+  /opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_config.py:295: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.10/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================= 5 passed, 1 warning in 2.33s =========================
+
+--- Summary ---
+Result: PASSED
+Timestamp: 2026-03-07 21:23:04
