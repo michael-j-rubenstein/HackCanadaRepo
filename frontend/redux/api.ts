@@ -8,6 +8,9 @@ import type {
   ShoppingCartItemCreate,
   PinnedItem,
   PinnedItemCreate,
+  ScanResponse,
+  SubmitRequest,
+  SubmitResponse,
 } from "../app/types/models";
 
 export const groceryApi = createApi({
@@ -19,7 +22,7 @@ export const groceryApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Items", "PriceHistory", "Cart", "Pins"],
+  tagTypes: ["Items", "PriceHistory", "Cart", "Pins", "Receipts"],
   endpoints: (builder) => ({
     getCategories: builder.query<Category[], void>({
       query: () => "/categories",
@@ -94,6 +97,31 @@ export const groceryApi = createApi({
       }),
       invalidatesTags: ["Pins"],
     }),
+
+    scanReceipt: builder.mutation<ScanResponse, FormData>({
+      query: (formData) => ({
+        url: "/receipts/scan",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+    scanReceiptBase64: builder.mutation<ScanResponse, { image_base64: string; mime_type: string }>({
+      query: (body) => ({
+        url: "/receipts/scan-base64",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    submitReceipt: builder.mutation<SubmitResponse, SubmitRequest>({
+      query: (body) => ({
+        url: "/receipts/submit",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Receipts"],
+    }),
   }),
 });
 
@@ -108,4 +136,7 @@ export const {
   useGetPinsQuery,
   usePinItemMutation,
   useUnpinItemMutation,
+  useScanReceiptMutation,
+  useScanReceiptBase64Mutation,
+  useSubmitReceiptMutation,
 } = groceryApi;

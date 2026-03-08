@@ -1,5 +1,6 @@
 import asyncio
 import time
+from typing import Optional
 
 from google import genai
 from google.genai import types
@@ -7,9 +8,19 @@ from google.genai.errors import ClientError
 
 from app.config import settings
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
+_client: Optional[genai.Client] = None
 
 FLASH = "gemini-2.5-flash"
+
+
+def get_client() -> genai.Client:
+    """Lazy-load the Gemini client."""
+    global _client
+    if _client is None:
+        if not settings.GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY is not set")
+        _client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    return _client
 FLASH_LITE = "gemini-2.5-flash-lite"
 PRO = "gemini-2.5-pro"
 
@@ -17,7 +28,7 @@ PRO = "gemini-2.5-pro"
 def generate(prompt: str, model: str = FLASH, max_retries: int = 3) -> str:
     for attempt in range(max_retries):
         try:
-            response = client.models.generate_content(model=model, contents=prompt)
+            response = get_client().models.generate_content(model=model, contents=prompt)
             return response.text
         except ClientError as e:
             if "429" in str(e) and attempt < max_retries - 1:
@@ -32,7 +43,7 @@ async def generate_async(prompt: str, model: str = FLASH, max_retries: int = 3) 
     for attempt in range(max_retries):
         try:
             response = await asyncio.to_thread(
-                client.models.generate_content, model=model, contents=prompt
+                get_client().models.generate_content, model=model, contents=prompt
             )
             return response.text
         except ClientError as e:
@@ -53,7 +64,7 @@ def generate_structured(
 ) -> str:
     for attempt in range(max_retries):
         try:
-            response = client.models.generate_content(
+            response = get_client().models.generate_content(
                 model=model,
                 contents=contents,
                 config={
@@ -81,7 +92,7 @@ async def generate_structured_async(
     for attempt in range(max_retries):
         try:
             response = await asyncio.to_thread(
-                client.models.generate_content,
+                get_client().models.generate_content,
                 model=model,
                 contents=contents,
                 config={
