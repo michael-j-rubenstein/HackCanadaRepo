@@ -1,12 +1,14 @@
+import re
 import uuid
 import base64
 from fastapi import APIRouter, Depends, Header, HTTPException, UploadFile, File
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 
 from app.database import get_db
-from app.models import ProductItem, Submission, SubmissionItem, User
+from app.models import ProductItem, Submission, SubmissionItem, User, Category, Brand, Store
 from app.models.receipt import ReceiptData, ReceiptItem
 from app.clients.gemini import extract_receipt
 from app.services.gemini import generate_structured_async
@@ -20,6 +22,7 @@ class MatchedItem(BaseModel):
     product_id: Optional[str] = None
     product_name: Optional[str] = None
     confidence: float = 0.0
+    is_auto_created: bool = False
 
 
 class ScanResponse(BaseModel):
@@ -61,6 +64,126 @@ class MatchResult(BaseModel):
 class ScanBase64Request(BaseModel):
     image_base64: str
     mime_type: str = "image/jpeg"
+
+
+def slugify(text: str) -> str:
+    """Convert text to a slug: 'Green Peppers' -> 'green_peppers'."""
+    text = text.lower().strip()
+    text = re.sub(r"[^a-z0-9]+", "_", text)
+    return text.strip("_")
+
+
+CATEGORY_UNIT_DEFAULTS = {
+    "dairy": "L",
+    "produce": "kg",
+    "meat": "kg",
+    "eggs": "unit",
+    "bakery": "unit",
+    "frozen": "unit",
+    "snacks": "unit",
+    "grocery": "unit",
+}
+
+
+def get_or_create_category(name: str, weight_unit: Optional[str], db: Session) -> Category:
+    """Find or create a category by name (case-insensitive)."""
+    cat = db.query(Category).filter(func.lower(Category.name) == name.lower()).first()
+    if cat:
+        return cat
+
+    # Infer unit from weight_unit or category defaults
+    if weight_unit and weight_unit in ("g", "kg", "lb", "oz"):
+        unit = "kg"
+    elif weight_unit and weight_unit in ("ml", "L"):
+        unit = "L"
+    else:
+        unit = CATEGORY_UNIT_DEFAULTS.get(name.lower(), "unit")
+
+    cat = Category(c_id=f"cat_{slugify(name)}", name=name.capitalize(), unit=unit)
+    db.add(cat)
+    db.flush()
+    return cat
+
+
+def get_or_create_store(store_name: Optional[str], db: Session) -> Store:
+    """Find or create a store by name (case-insensitive). Falls back to first existing store."""
+    if store_name:
+        store = db.query(Store).filter(func.lower(Store.name) == store_name.lower()).first()
+        if store:
+            return store
+        store = Store(store_id=f"store_{slugify(store_name)}", name=store_name)
+        db.add(store)
+        db.flush()
+        return store
+
+    # Fallback to first existing store
+    store = db.query(Store).first()
+    if store:
+        return store
+    store = Store(store_id="store_unknown", name="Unknown Store")
+    db.add(store)
+    db.flush()
+    return store
+
+
+def find_brand(item_name: str, db: Session) -> Brand:
+    """Check if any existing brand name appears as a substring in the item name."""
+    brands = db.query(Brand).all()
+    item_lower = item_name.lower()
+    for brand in brands:
+        if brand.name.lower() != "generic" and brand.name.lower() in item_lower:
+            return brand
+    # Fallback to brand_generic
+    generic = db.query(Brand).filter(Brand.brand_id == "brand_generic").first()
+    if generic:
+        return generic
+    generic = Brand(brand_id="brand_generic", name="Generic")
+    db.add(generic)
+    db.flush()
+    return generic
+
+
+def auto_create_products_for_unmatched(
+    unmatched_items: list[ReceiptItem],
+    store_name: Optional[str],
+    db: Session,
+) -> list[MatchedItem]:
+    """Auto-create ProductItem records for unmatched receipt items."""
+    if not unmatched_items:
+        return []
+
+    store = get_or_create_store(store_name, db)
+    results = []
+
+    for item in unmatched_items:
+        category = get_or_create_category(item.category or "Grocery", item.weight_unit, db)
+        brand = find_brand(item.name, db)
+
+        p_id = f"prod_{slugify(item.name)}_{slugify(store.name)}"
+
+        existing = db.query(ProductItem).filter(ProductItem.p_id == p_id).first()
+        if not existing:
+            product = ProductItem(
+                p_id=p_id,
+                name=item.name,
+                c_id=category.c_id,
+                brand_id=brand.brand_id,
+                store_id=store.store_id,
+            )
+            db.add(product)
+            db.flush()
+        else:
+            product = existing
+
+        results.append(MatchedItem(
+            receipt_item=item,
+            product_id=product.p_id,
+            product_name=product.name,
+            confidence=1.0,
+            is_auto_created=True,
+        ))
+
+    return results
 
 
 MATCH_PROMPT = """You are a product matching assistant. Given a list of receipt item names and a list of available products, match each receipt item to the most similar product.
@@ -167,11 +290,15 @@ async def scan_receipt(
 
     matched, unmatched = await match_items_to_products(receipt_data.items, db)
 
+    auto_created = auto_create_products_for_unmatched(unmatched, receipt_data.store_name, db)
+    matched.extend(auto_created)
+    db.commit()
+
     return ScanResponse(
         store_name=receipt_data.store_name,
         date=receipt_data.date,
         matched_items=matched,
-        unmatched_items=unmatched,
+        unmatched_items=[],
         subtotal=receipt_data.subtotal,
         tax=receipt_data.tax,
         total=receipt_data.total
@@ -200,11 +327,15 @@ async def scan_receipt_base64(
 
     matched, unmatched = await match_items_to_products(receipt_data.items, db)
 
+    auto_created = auto_create_products_for_unmatched(unmatched, receipt_data.store_name, db)
+    matched.extend(auto_created)
+    db.commit()
+
     return ScanResponse(
         store_name=receipt_data.store_name,
         date=receipt_data.date,
         matched_items=matched,
-        unmatched_items=unmatched,
+        unmatched_items=[],
         subtotal=receipt_data.subtotal,
         tax=receipt_data.tax,
         total=receipt_data.total

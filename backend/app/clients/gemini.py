@@ -15,7 +15,7 @@ RECEIPT_EXTRACTION_PROMPT = (
     "'GRN PEPPERS' means 'Green Peppers', 'BBy SPINACH' means 'Baby Spinach'). "
     "Expand all abbreviations into full, common grocery product names. "
     "For each item, also classify it into exactly one of these categories: "
-    "Dairy, Produce, Bakery. "
+    "Dairy, Produce, Bakery, Frozen, Snacks, Grocery, Eggs, Meat. If none fit, use the most appropriate single-word category name. "
     "Set the 'category' field to the matching category name. "
     "IMPORTANT: Many receipts show the weight or volume purchased (e.g., '2.12 kg', '1.5 lb', '500 g', '1.75 L'). "
     "If a weight or volume is shown for an item, extract it into 'weight_value' (number) and "
