@@ -15,7 +15,8 @@ from sqlalchemy.orm import Session
 
 from app.database import engine, Base
 from app.models import (
-    Category, Brand, Store, ProductItem, User, PriceByHour
+    Category, Brand, Store, ProductItem, User, PriceByHour,
+    CartItem, Submission, SubmissionItem
 )
 
 
@@ -118,11 +119,28 @@ def seed_price_by_hour(session: Session, base_prices: dict[str, float]) -> None:
     print(f"Seeded {count} price_by_hour records")
 
 
+def clear_tables(session: Session) -> None:
+    """Clear all tables in reverse FK order."""
+    session.execute(SubmissionItem.__table__.delete())
+    session.execute(Submission.__table__.delete())
+    session.execute(CartItem.__table__.delete())
+    session.execute(PriceByHour.__table__.delete())
+    session.execute(ProductItem.__table__.delete())
+    session.execute(User.__table__.delete())
+    session.execute(Category.__table__.delete())
+    session.execute(Brand.__table__.delete())
+    session.execute(Store.__table__.delete())
+    session.commit()
+    print("Cleared existing data")
+
+
 def run_seed():
     """Run all seeders."""
     print("Starting database seed...")
 
     with Session(engine) as session:
+        # Clear existing data first
+        clear_tables(session)
         # Seed in order (respecting FK constraints)
         seed_stores(session)
         seed_brands(session)

@@ -8,3 +8,12 @@ prod_carrots_compliments,Baby Carrots 1lb,cat_produce,brand_compliments,store_lo
 prod_bread_pc,Whole Wheat Bread,cat_bakery,brand_pc,store_loblaws,3.49
 prod_bagels_noname,Plain Bagels 6pk,cat_bakery,brand_noname,store_loblaws,2.99
 prod_muffins_compliments,Blueberry Muffins 4pk,cat_bakery,brand_compliments,store_loblaws,5.99
+prod_dessert_pc,President's Choice Gourmet Dairy Free Dessert,cat_frozen,brand_pc,store_loblaws,7.49
+prod_shortbread_pc,President's Choice Gold Collection Shortbread Cookies,cat_snacks,brand_pc,store_loblaws,6.29
+prod_shortbread_wc_pc,President's Choice White Chocolate Dark Shortbread,cat_snacks,brand_pc,store_loblaws,5.79
+prod_plastic_bags,Plastic Bags,cat_grocery,brand_generic,store_loblaws,4.29
+prod_orzo_pasta,Orzo Pasta,cat_grocery,brand_generic,store_loblaws,2.79
+prod_eggs_large,Large White Eggs,cat_eggs,brand_generic,store_loblaws,5.49
+prod_raspberries,Organic Raspberries,cat_produce,brand_noname,store_loblaws,6.49
+prod_striploin,Certified Angus Beef Striploin Steak,cat_meat,brand_angus,store_loblaws,27.99
+prod_cake_rv,Large Red Velvet Cake,cat_bakery,brand_pc,store_loblaws,22.49

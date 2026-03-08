@@ -41,3 +41,45 @@ export interface PinnedItem {
 export interface PinnedItemCreate {
   item_id: string;
 }
+
+// Receipt types
+export interface ReceiptItem {
+  name: string;
+  total_price: number;
+  category: string | null;
+  weight_value: number | null;
+  weight_unit: string | null;
+}
+
+export interface MatchedItem {
+  receipt_item: ReceiptItem;
+  product_id: string | null;
+  product_name: string | null;
+  confidence: number;
+}
+
+export interface ScanResponse {
+  store_name: string | null;
+  date: string | null;
+  matched_items: MatchedItem[];
+  unmatched_items: ReceiptItem[];
+  subtotal: number | null;
+  tax: number | null;
+  total: number | null;
+}
+
+export interface SubmitItem {
+  product_id: string;
+  price: number;
+}
+
+export interface SubmitRequest {
+  store_name: string | null;
+  date: string | null;
+  items: SubmitItem[];
+}
+
+export interface SubmitResponse {
+  submission_id: string;
+  items_count: number;
+}

@@ -22,11 +22,18 @@ fi
 echo "Installing frontend dependencies..."
 npm install
 
+CLEAN_FLAG=""
+if [ "$1" = "--clean" ]; then
+  CLEAN_FLAG="--clean"
+  echo "Clean build requested, removing native directories..."
+  rm -rf ios android
+fi
+
 if [ ! -d ios ] || [ ! -d android ]; then
   echo "Running Expo prebuild..."
-  npx expo prebuild --clean
+  npx expo prebuild $CLEAN_FLAG
 else
-  echo "Native directories exist, skipping prebuild (run 'npx expo prebuild --clean' manually if needed)"
+  echo "Native directories exist, skipping prebuild (run with --clean to force rebuild)"
 fi
 
 echo "Starting Expo dev server (development build)..."

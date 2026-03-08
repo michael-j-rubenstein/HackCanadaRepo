@@ -35,7 +35,19 @@
           "domain": "dev-zouz3636ehzd5eo7.us.auth0.com"
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to scan receipts."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to upload receipt images."
+        }
+      ]
     ]
   }
 }
