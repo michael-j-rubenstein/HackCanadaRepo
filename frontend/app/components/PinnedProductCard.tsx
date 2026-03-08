@@ -8,7 +8,7 @@ import { getItemEmoji } from "../utils/emojiMap";
 interface Props {
   item: PinnedItem;
   priceHistory: PricePoint[];
-  onPress: (itemId: number, itemName: string) => void;
+  onPress: (itemId: string, itemName: string) => void;
 }
 
 export default function PinnedProductCard({ item, priceHistory, onPress }: Props) {

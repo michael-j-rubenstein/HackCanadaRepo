@@ -1,21 +1,18 @@
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   icon: string | null;
 }
 
 export interface GroceryItem {
-  id: number;
+  id: string;
   name: string;
   brand: string | null;
   unit: string;
-  image_url: string | null;
-  category_id: number;
+  category_id: string;
   category_name: string | null;
   current_price: number | null;
   price_change_pct: number | null;
-  external_id: string | null;
-  created_at: string | null;
 }
 
 export interface PricePoint {
@@ -23,56 +20,24 @@ export interface PricePoint {
   avg_price: number;
 }
 
-export interface PriceSubmission {
-  id: number;
-  item_id: number;
-  price: number;
-  store_name: string;
-  date_observed: string;
-  submitted_at: string | null;
-}
-
-export interface PriceSubmissionCreate {
-  price: number;
-  store_name: string;
-  date_observed: string;
-}
-
-export interface PriceAlert {
-  id: number;
-  item_id: number;
-  item_name: string | null;
-  target_price: number;
-  is_triggered: boolean;
-  triggered_at: string | null;
-  created_at: string | null;
-}
-
-export interface PriceAlertCreate {
-  item_id: number;
-  target_price: number;
-}
-
 export interface ShoppingCartItem {
-  id: number;
-  item_id: number;
+  id: string;
+  item_id: string;
   item_name: string | null;
-  created_at: string | null;
 }
 
 export interface ShoppingCartItemCreate {
-  item_id: number;
+  item_id: string;
 }
 
 export interface PinnedItem {
-  id: number;
-  item_id: number;
+  id: string;
+  item_id: string;
   item_name: string | null;
   current_price: number | null;
   price_change_pct: number | null;
-  created_at: string | null;
 }
 
 export interface PinnedItemCreate {
-  item_id: number;
+  item_id: string;
 }

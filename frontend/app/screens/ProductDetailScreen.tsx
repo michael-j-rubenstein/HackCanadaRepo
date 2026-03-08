@@ -11,11 +11,9 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import PriceChart from "../components/PriceChart";
-import PriceSubmitForm from "../components/PriceSubmitForm";
 import {
   useGetItemQuery,
   useGetPriceHistoryQuery,
-  useSubmitPriceMutation,
   useGetPinsQuery,
   usePinItemMutation,
   useUnpinItemMutation,
@@ -30,20 +28,10 @@ export default function ProductDetailScreen({ route }: Props) {
   const { itemId } = route.params;
   const { data: item, isLoading: itemLoading } = useGetItemQuery(itemId);
   const { data: history, isLoading: historyLoading } = useGetPriceHistoryQuery({ id: itemId });
-  const [submitPrice, { isLoading: submitting }] = useSubmitPriceMutation();
   const { data: pins } = useGetPinsQuery();
   const [pinItem] = usePinItemMutation();
   const [unpinItem] = useUnpinItemMutation();
   const isPinned = pins?.some((p) => p.item_id === itemId) ?? false;
-
-  const handleSubmit = async (data: { price: number; store_name: string; date_observed: string }) => {
-    try {
-      await submitPrice({ itemId, body: data }).unwrap();
-      Alert.alert("Success", "Price submitted!");
-    } catch {
-      Alert.alert("Error", "Failed to submit price.");
-    }
-  };
 
   if (itemLoading) {
     return (
@@ -119,9 +107,6 @@ export default function ProductDetailScreen({ route }: Props) {
       ) : (
         <PriceChart data={history ?? []} />
       )}
-
-      <Text style={styles.sectionTitle}>Submit a Price</Text>
-      <PriceSubmitForm onSubmit={handleSubmit} loading={submitting} />
     </ScrollView>
   );
 }

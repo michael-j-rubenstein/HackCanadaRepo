@@ -28,13 +28,13 @@ type ActiveToggle = "drops" | "rises";
 
 export default function MarketScreen() {
   const { data: categories, isLoading: catsLoading } = useGetCategoriesQuery();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | "all" | "cart">("all");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | "all" | "cart">("all");
   const [activeToggle, setActiveToggle] = useState<ActiveToggle>("drops");
   const navigation = useNavigation<Nav>();
 
   const { data: cartData } = useGetCartQuery();
   const cartItemIds = useMemo(() => {
-    const s = new Set<number>();
+    const s = new Set<string>();
     cartData?.forEach((ci) => s.add(ci.item_id));
     return s;
   }, [cartData]);

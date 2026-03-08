@@ -2,7 +2,6 @@ import { configureStore, combineReducers, createSlice } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { groceryApi } from "./api";
-import alertsReducer from "./alertsSlice";
 
 const appSlice = createSlice({
   name: "app",
@@ -18,7 +17,6 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   app: appSlice.reducer,
-  alerts: alertsReducer,
   [groceryApi.reducerPath]: groceryApi.reducer,
 });
 

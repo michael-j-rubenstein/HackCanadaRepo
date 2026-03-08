@@ -39,7 +39,7 @@ function PinnedCardWithHistory({
   onPress,
 }: {
   pin: PinnedItem;
-  onPress: (itemId: number, itemName: string) => void;
+  onPress: (itemId: string, itemName: string) => void;
 }) {
   const { data: history } = useGetPriceHistoryQuery({ id: pin.item_id, days: 7 });
   return <PinnedProductCard item={pin} priceHistory={history ?? []} onPress={onPress} />;
@@ -74,7 +74,7 @@ export default function HomeScreen() {
     [pins]
   );
 
-  const handlePress = (itemId: number, itemName: string) => {
+  const handlePress = (itemId: string, itemName: string) => {
     navigation.navigate("ProductDetail", { itemId, itemName });
   };
 

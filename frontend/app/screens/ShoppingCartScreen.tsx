@@ -27,7 +27,7 @@ export default function ShoppingCartScreen() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const handleSearchChange = useCallback(
     (text: string) => {
@@ -44,7 +44,7 @@ export default function ShoppingCartScreen() {
   );
 
   const cartItemIds = useMemo(() => {
-    const s = new Set<number>();
+    const s = new Set<string>();
     cartItems?.forEach((ci) => s.add(ci.item_id));
     return s;
   }, [cartItems]);
@@ -54,7 +54,7 @@ export default function ShoppingCartScreen() {
     return allItems.filter((item) => !cartItemIds.has(item.id));
   }, [allItems, cartItemIds]);
 
-  const toggleSelect = (id: number) => {
+  const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
